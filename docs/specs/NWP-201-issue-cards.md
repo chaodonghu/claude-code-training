@@ -5,7 +5,7 @@
 
 **Ticket:** [NWP-201](../tickets/NWP-201.md)
 **Author:** Dong Hu
-**Status:** reviewed
+**Status:** done
 
 ## Problem
 
@@ -96,6 +96,11 @@ Model the card as a typed record with a status state machine encoded as a transi
 
 - Persistence (NWP-203), auth, real issuer calls, editing a limit after issue (NWP-202).
 - Recording spend from payments. `spent` is a stored field; no card transactions exist in the store.
+
+## Departures from the plan
+
+- A merchant category lock was added at issue time: `CardCategory` on the model, allowlisted in `parseIssueCardInput`, chosen in the drawer, shown on the list and detail. It was a stretch goal and came in early because it changes the model.
+- `CARD_STATUSES` is derived from the transition table and used by the status route, so there is one source for the allowlist.
 
 ## Open questions
 

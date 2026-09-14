@@ -82,3 +82,29 @@ export interface PaymentFilters {
   sort?: "createdAt" | "amount"
   direction?: "asc" | "desc"
 }
+
+export type CardStatus = "active" | "frozen" | "cancelled"
+
+export interface Card {
+  id: string
+  nickname: string
+  merchantId: string
+  /** Integer minor units. Never a float. */
+  limit: number
+  /** Integer minor units. Never a float. */
+  spent: number
+  currency: Currency
+  status: CardStatus
+  last4: string
+  /** Opaque reference to the generated number. Never derived from it. */
+  numberRef: string
+  /** ISO 8601, always UTC. */
+  createdAt: string
+}
+
+export interface IssueCardInput {
+  nickname: string
+  merchantId: string
+  limit: number
+  currency: Currency
+}

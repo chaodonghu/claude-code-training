@@ -14,34 +14,6 @@ import { notFound } from "next/navigation"
 
 const AMBER_AT = 80
 
-/**
- * Tailwind scans for literal class names, so the bar picks its width from
- * this table rather than building one from the percentage at runtime.
- */
-const BAR_WIDTHS = [
-  "w-[0%]",
-  "w-[5%]",
-  "w-[10%]",
-  "w-[15%]",
-  "w-[20%]",
-  "w-[25%]",
-  "w-[30%]",
-  "w-[35%]",
-  "w-[40%]",
-  "w-[45%]",
-  "w-[50%]",
-  "w-[55%]",
-  "w-[60%]",
-  "w-[65%]",
-  "w-[70%]",
-  "w-[75%]",
-  "w-[80%]",
-  "w-[85%]",
-  "w-[90%]",
-  "w-[95%]",
-  "w-[100%]",
-] as const
-
 export default async function CardDetail({
   params,
 }: {
@@ -60,7 +32,6 @@ export default async function CardDetail({
   const remaining = card.limit - spent
   // Display only. Amounts stay integer minor units everywhere else.
   const percent = Math.min(100, Math.round((spent * 100) / card.limit))
-  const barWidth = BAR_WIDTHS[Math.round(percent / 5)]
 
   return (
     <div className="p-4 sm:p-6">
@@ -88,22 +59,18 @@ export default async function CardDetail({
         Spend against limit
       </h2>
       <div className="mt-3 max-w-md">
-        <div
-          role="progressbar"
+        <progress
           aria-label="Spend against limit"
-          aria-valuenow={spent}
-          aria-valuemin={0}
-          aria-valuemax={card.limit}
-          className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800"
-        >
-          <div
-            className={cx(
-              "h-full rounded-full",
-              percent >= AMBER_AT ? "bg-amber-500" : "bg-blue-500",
-              barWidth,
-            )}
-          />
-        </div>
+          value={spent}
+          max={card.limit}
+          className={cx(
+            "h-2 w-full appearance-none overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800",
+            "[&::-moz-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:rounded-full",
+            percent >= AMBER_AT
+              ? "[&::-moz-progress-bar]:bg-amber-500 [&::-webkit-progress-value]:bg-amber-500"
+              : "[&::-moz-progress-bar]:bg-blue-500 [&::-webkit-progress-value]:bg-blue-500",
+          )}
+        />
         <p className="mt-2 text-sm text-gray-500">
           {percent}% of limit used · {formatMoney(spent, card.currency)} of{" "}
           {formatMoney(card.limit, card.currency)}

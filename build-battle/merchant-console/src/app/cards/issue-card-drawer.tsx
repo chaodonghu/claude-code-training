@@ -84,6 +84,11 @@ export function IssueCardDrawer({
     event.preventDefault()
     setError(null)
 
+    if (!merchantId) {
+      setError("Choose a merchant.")
+      return
+    }
+
     const minorUnits = parseAmountToMinorUnits(limit)
     if (minorUnits === null) {
       setError("Enter an amount like 250.00")
@@ -203,11 +208,7 @@ export function IssueCardDrawer({
                 >
                   Merchant
                 </label>
-                <Select
-                  value={merchantId}
-                  onValueChange={onMerchantChange}
-                  required
-                >
+                <Select value={merchantId} onValueChange={onMerchantChange}>
                   <SelectTrigger id="card-merchant" className="mt-2">
                     <SelectValue placeholder="Choose a merchant" />
                   </SelectTrigger>

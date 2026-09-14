@@ -1,3 +1,4 @@
+import { sumMinorUnits } from "@/lib/money"
 import { merchantById } from "./merchants"
 import { store } from "./store"
 import { Payment, PaymentFilters, PaymentStatus } from "./types"
@@ -103,6 +104,18 @@ export function queryPayments(filters: PaymentFilters) {
   const filtered = filterPayments(filters)
   const sorted = sortPayments(filtered, filters.sort, filters.direction)
   return paginate(sorted, filters.page, filters.pageSize)
+}
+
+/**
+ * Spend on a card is the captured payments tagged with it, never a stored
+ * number. It lives here so no second filter path over payments appears.
+ */
+export function spentOnCard(cardId: string): number {
+  return sumMinorUnits(
+    store.payments
+      .filter((p) => p.cardId === cardId && p.status === "captured")
+      .map((p) => p.amount),
+  )
 }
 
 export function paymentById(id: string) {

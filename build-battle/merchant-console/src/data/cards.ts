@@ -130,7 +130,6 @@ export function issueCard(
     nickname: input.nickname,
     merchantId: input.merchantId,
     limit: input.limit,
-    spent: 0,
     currency: input.currency,
     category: input.category,
     status: "active",

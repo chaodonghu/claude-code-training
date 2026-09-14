@@ -2,6 +2,7 @@ import { Divider } from "@/components/Divider"
 import { StatusBadge } from "@/components/ui/payments/StatusBadge"
 import { CARD_HISTORY_LABELS } from "@/lib/cards"
 import { cardById } from "@/data/cards"
+import { spentOnCard } from "@/data/queries"
 import { merchantById } from "@/data/merchants"
 import { CARD_CATEGORY_LABELS, maskCard } from "@/lib/cards"
 import { formatInZone } from "@/lib/dates"
@@ -55,9 +56,10 @@ export default async function CardDetail({
   const merchant = merchantById(card.merchantId)
   const merchantName = merchant?.name ?? card.merchantId
   const timezone = merchant?.timezone ?? "UTC"
-  const remaining = card.limit - card.spent
+  const spent = spentOnCard(card.id)
+  const remaining = card.limit - spent
   // Display only. Amounts stay integer minor units everywhere else.
-  const percent = Math.min(100, Math.round((card.spent * 100) / card.limit))
+  const percent = Math.min(100, Math.round((spent * 100) / card.limit))
   const barWidth = BAR_WIDTHS[Math.round(percent / 5)]
 
   return (
@@ -89,7 +91,7 @@ export default async function CardDetail({
         <div
           role="progressbar"
           aria-label="Spend against limit"
-          aria-valuenow={card.spent}
+          aria-valuenow={spent}
           aria-valuemin={0}
           aria-valuemax={card.limit}
           className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800"
@@ -103,7 +105,7 @@ export default async function CardDetail({
           />
         </div>
         <p className="mt-2 text-sm text-gray-500">
-          {percent}% of limit used · {formatMoney(card.spent, card.currency)} of{" "}
+          {percent}% of limit used · {formatMoney(spent, card.currency)} of{" "}
           {formatMoney(card.limit, card.currency)}
         </p>
       </div>
@@ -119,7 +121,7 @@ export default async function CardDetail({
         </Field>
         <Field label="Category">{CARD_CATEGORY_LABELS[card.category]}</Field>
         <Field label="Limit">{formatMoney(card.limit, card.currency)}</Field>
-        <Field label="Spent">{formatMoney(card.spent, card.currency)}</Field>
+        <Field label="Spent">{formatMoney(spent, card.currency)}</Field>
         <Field label="Remaining">{formatMoney(remaining, card.currency)}</Field>
         <Field label="Currency">{card.currency}</Field>
         <Field label="Created (UTC)">

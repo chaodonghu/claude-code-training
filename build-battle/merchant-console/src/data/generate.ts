@@ -156,7 +156,7 @@ export function generate() {
   }
 
   const payouts = generatePayouts(payments)
-  const cards = generateCards()
+  const cards = generateCards(payments)
   return { payments, refunds, disputes, payouts, cards }
 }
 
@@ -179,18 +179,37 @@ const CARD_SEED_STATUSES: readonly CardStatus[] = [
 ]
 
 /**
+ * Share of its limit each seeded card has spent. The first is past 80 so the
+ * amber bar has a case; the fourth spends nothing so a fresh card has one too.
+ */
+const CARD_SPEND_TARGETS = [88, 62, 35, 0, 47, 21]
+
+/**
  * Six cards so the list and the detail page have something on first load.
  * Only the last four and an opaque ref are kept; the generated number is
- * discarded here exactly as it is on the issue route.
+ * discarded here exactly as it is on the issue route. Spend is not stored:
+ * existing captured payments are tagged with the card, and the limit is set
+ * from what they come to, so the bar reflects real records.
  */
-function generateCards(): Card[] {
+function generateCards(payments: Payment[]): Card[] {
   const cards: Card[] = []
+  const tagged = new Set<string>()
 
   CARD_NICKNAMES.forEach((nickname, index) => {
     const merchant = pick(merchants)
-    const limit = between(50_00, 2_000_00)
-    // One card sits past 80 percent so the amber spend bar has a case.
-    const spentPercent = index === 0 ? between(85, 95) : between(0, 70)
+    const target = CARD_SPEND_TARGETS[index]
+    const spent = tagPaymentsForCard(
+      payments,
+      merchant.id,
+      `card_${pad(index + 1)}`,
+      target === 0 ? 0 : between(2, 5),
+      tagged,
+    )
+    // Round the limit up to a whole currency unit above the target share.
+    const limit =
+      spent === 0
+        ? between(50_00, 2_000_00)
+        : Math.ceil(spent / target) * 100
     const createdAt = new Date(GENERATED_AT)
     createdAt.setUTCDate(createdAt.getUTCDate() - between(1, 60))
     createdAt.setUTCHours(between(0, 23), between(0, 59), between(0, 59), 0)
@@ -210,7 +229,6 @@ function generateCards(): Card[] {
       nickname,
       merchantId: merchant.id,
       limit,
-      spent: Math.floor((limit * spentPercent) / 100),
       currency: merchant.currency,
       category: pick(CARD_CATEGORIES),
       status,
@@ -222,6 +240,32 @@ function generateCards(): Card[] {
   })
 
   return cards
+}
+
+/**
+ * Tags existing captured payments with a card. Amounts, statuses, and dates
+ * are never touched; only the card reference is added.
+ */
+function tagPaymentsForCard(
+  payments: Payment[],
+  merchantId: string,
+  cardId: string,
+  count: number,
+  tagged: Set<string>,
+): number {
+  let spent = 0
+  for (const payment of payments) {
+    if (count === 0) break
+    if (payment.merchantId !== merchantId) continue
+    if (payment.status !== "captured") continue
+    if (tagged.has(payment.id)) continue
+
+    payment.cardId = cardId
+    tagged.add(payment.id)
+    spent += payment.amount
+    count--
+  }
+  return spent
 }
 
 function generatePayouts(payments: Payment[]): Payout[] {

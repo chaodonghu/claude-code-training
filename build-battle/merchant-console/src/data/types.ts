@@ -34,6 +34,8 @@ export interface Payment {
   /** ISO 8601, always UTC. */
   createdAt: string
   description: string
+  /** Set when the payment was made on a console-issued card. */
+  cardId?: string
 }
 
 export interface Refund {
@@ -100,8 +102,6 @@ export interface Card {
   merchantId: string
   /** Integer minor units. Never a float. */
   limit: number
-  /** Integer minor units. Never a float. */
-  spent: number
   currency: Currency
   category: CardCategory
   status: CardStatus

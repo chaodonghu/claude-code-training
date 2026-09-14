@@ -68,7 +68,7 @@ export default async function PaymentsPage({
         />
         <ExportDialog
           query={query.toString()}
-          columns={[...EXPORT_COLUMN_OPTIONS]}
+          columns={EXPORT_COLUMN_OPTIONS}
           counts={{ filtered: total, all: queryPayments({}).total }}
         />
       </div>

@@ -27,14 +27,15 @@ export function ExportDialog({
   counts,
 }: {
   query: string
-  columns: { key: ExportColumn; label: string; defaultSelected: boolean }[]
+  columns: readonly {
+    key: ExportColumn
+    label: string
+    defaultSelected: boolean
+  }[]
   counts: { filtered: number; all: number }
 }) {
   const [selected, setSelected] = useState<Set<ExportColumn>>(
-    () =>
-      new Set(
-        columns.filter((c) => c.defaultSelected).map((c) => c.key),
-      ),
+    () => new Set(columns.filter((c) => c.defaultSelected).map((c) => c.key)),
   )
   const [scope, setScope] = useState<ExportScope>("filtered")
 
@@ -61,10 +62,7 @@ export function ExportDialog({
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button
-          variant="secondary"
-          className="w-full gap-2 py-1.5 sm:w-fit"
-        >
+        <Button variant="secondary" className="w-full gap-2 py-1.5 sm:w-fit">
           <Download
             className="-ml-0.5 size-4 shrink-0 text-gray-400 dark:text-gray-600"
             aria-hidden="true"
@@ -94,7 +92,7 @@ export function ExportDialog({
                     onChange={(event) =>
                       toggle(column.key, event.target.checked)
                     }
-                    className="size-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950"
+                    className="size-4 accent-blue-500"
                   />
                   <label
                     htmlFor={`export-column-${column.key}`}
@@ -121,7 +119,7 @@ export function ExportDialog({
                     value={option.value}
                     checked={scope === option.value}
                     onChange={() => setScope(option.value)}
-                    className="size-4 border-gray-300 text-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950"
+                    className="size-4 accent-blue-500"
                   />
                   <label
                     htmlFor={`export-scope-${option.value}`}

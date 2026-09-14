@@ -20,11 +20,7 @@ import {
   SelectValue,
 } from "@/components/Select"
 import { Card, CardCategory, Currency } from "@/data/types"
-import {
-  CARD_CATEGORIES,
-  CARD_CATEGORY_LABELS,
-  CARD_CURRENCIES,
-} from "@/lib/cards"
+import { CARD_CATEGORIES, CARD_CATEGORY_LABELS } from "@/lib/cards"
 import { parseAmountToMinorUnits } from "@/lib/money"
 import { Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -237,21 +233,20 @@ export function IssueCardDrawer({
                 >
                   Currency
                 </label>
-                <Select
+                <Input
+                  id="card-currency"
+                  name="currency"
                   value={currency}
-                  onValueChange={(next) => setCurrency(next as Currency)}
+                  readOnly
+                  aria-describedby="card-currency-help"
+                  className="mt-2"
+                />
+                <p
+                  id="card-currency-help"
+                  className="mt-1 text-xs text-gray-500"
                 >
-                  <SelectTrigger id="card-currency" className="mt-2">
-                    <SelectValue placeholder="Currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CARD_CURRENCIES.map((code) => (
-                      <SelectItem key={code} value={code}>
-                        {code}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  Set by the merchant.
+                </p>
               </div>
 
               <div>

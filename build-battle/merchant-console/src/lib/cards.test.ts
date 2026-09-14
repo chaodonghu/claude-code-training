@@ -145,3 +145,26 @@ describe("the category lock", () => {
     }
   })
 })
+
+describe("the merchant currency lock", () => {
+  const issue = (currency: unknown) =>
+    parseIssueCardInput({
+      nickname: "Ads spend",
+      merchantId: "mch_01",
+      limit: 25000,
+      currency,
+      category: "other",
+    })
+
+  it("accepts the merchant's own currency", () => {
+    expect(issue("USD").ok).toBe(true)
+  })
+
+  it("rejects a currency the merchant does not settle in", () => {
+    for (const currency of ["EUR", "GBP"]) {
+      const result = issue(currency)
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.message).toMatch(/must be in USD/)
+    }
+  })
+})

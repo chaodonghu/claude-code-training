@@ -49,7 +49,8 @@ export function parseIssueCardInput(body: unknown): ParseResult {
   if (merchantId.length === 0) {
     return { ok: false, message: "Choose a merchant." }
   }
-  if (!merchantById(merchantId)) {
+  const merchant = merchantById(merchantId)
+  if (!merchant) {
     return { ok: false, message: "That merchant does not exist." }
   }
 
@@ -78,6 +79,12 @@ export function parseIssueCardInput(body: unknown): ParseResult {
     return {
       ok: false,
       message: `Currency must be one of ${CARD_CURRENCIES.join(", ")}.`,
+    }
+  }
+  if (currency !== merchant.currency) {
+    return {
+      ok: false,
+      message: `Cards for ${merchant.name} must be in ${merchant.currency}.`,
     }
   }
 

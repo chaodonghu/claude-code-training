@@ -49,7 +49,11 @@ export default async function CardDetail({
   const card = cardById(id)
   if (!card) notFound()
 
-  const merchant = merchantById(card.merchantId)!
+  // A card outlives its merchant record in the seed only if someone removes
+  // one, so fall back to the id rather than crashing the page.
+  const merchant = merchantById(card.merchantId)
+  const merchantName = merchant?.name ?? card.merchantId
+  const timezone = merchant?.timezone ?? "UTC"
   const remaining = card.limit - card.spent
   // Display only. Amounts stay integer minor units everywhere else.
   const percent = Math.min(100, Math.round((card.spent * 100) / card.limit))
@@ -107,8 +111,10 @@ export default async function CardDetail({
 
       <dl className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Merchant">
-          {merchant.name}
-          <span className="ml-2 text-gray-500">{merchant.country}</span>
+          {merchantName}
+          {merchant && (
+            <span className="ml-2 text-gray-500">{merchant.country}</span>
+          )}
         </Field>
         <Field label="Category">{CARD_CATEGORY_LABELS[card.category]}</Field>
         <Field label="Limit">{formatMoney(card.limit, card.currency)}</Field>
@@ -118,8 +124,8 @@ export default async function CardDetail({
         <Field label="Created (UTC)">
           <span className="font-mono text-sm">{card.createdAt}</span>
         </Field>
-        <Field label={`Created (${merchant.timezone})`}>
-          {formatInZone(card.createdAt, merchant.timezone)}
+        <Field label={`Created (${timezone})`}>
+          {formatInZone(card.createdAt, timezone)}
         </Field>
         <Field label="Card id">
           <span className="font-mono text-sm">{card.id}</span>

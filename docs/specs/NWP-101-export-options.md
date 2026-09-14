@@ -77,4 +77,4 @@ Replace the fixed Export link with an Export button that opens the existing Draw
 
 ## Open questions
 
-- None blocking. Column order in the file follows the registry order, not the order boxes were ticked, so two exports with the same selection are byte-identical.
+- None blocking. Column order in the file follows the order requested; the dialog sends registry order, so files from the UI are stable while API callers can choose their own layout.

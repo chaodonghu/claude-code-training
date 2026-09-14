@@ -44,7 +44,9 @@ describe("toCsv", () => {
 
   it("quotes cells containing a comma, so amounts do not split", () => {
     const large = { ...payment, amount: 123456789 }
-    expect(toCsv([large], ["amount"])).toBe(['amount', '"$1,234,567.89"'].join("\n"))
+    expect(toCsv([large], ["amount"])).toBe(
+      ["amount", '"$1,234,567.89"'].join("\n"),
+    )
   })
 
   it("doubles embedded quotes rather than dropping them", () => {
@@ -56,7 +58,10 @@ describe("toCsv", () => {
 
   it("keeps a newline inside a description in one quoted cell", () => {
     const multiline = { ...payment, description: "Order 1180\nsecond line" }
-    const body = toCsv([multiline], ["description"]).split("\n").slice(1).join("\n")
+    const body = toCsv([multiline], ["description"])
+      .split("\n")
+      .slice(1)
+      .join("\n")
     expect(body).toBe('"Order 1180\nsecond line"')
   })
 
@@ -101,19 +106,29 @@ describe("EXPORT_COLUMN_OPTIONS", () => {
 
 describe("parseExportColumns", () => {
   it("drops names that are not export columns", () => {
-    expect(parseExportColumns("id,merchant_id,amount")).toEqual(["id", "amount"])
+    expect(parseExportColumns("id,merchant_id,amount")).toEqual([
+      "id",
+      "amount",
+    ])
   })
 
   it("keeps a repeated column once", () => {
     expect(parseExportColumns("id,id,amount")).toEqual(["id", "amount"])
   })
 
-  it("returns registry order whatever order the client sent", () => {
+  it("keeps a subset in the requested order", () => {
     expect(parseExportColumns("currency, amount ,id")).toEqual([
-      "id",
-      "amount",
       "currency",
+      "amount",
+      "id",
     ])
+  })
+
+  it("never includes the card last four unless asked", () => {
+    const defaults = EXPORT_COLUMN_OPTIONS.filter((o) => o.defaultSelected)
+      .map((o) => o.key)
+      .join(",")
+    expect(parseExportColumns(defaults)).not.toContain("last4")
   })
 
   it("returns nothing for a missing or empty parameter", () => {

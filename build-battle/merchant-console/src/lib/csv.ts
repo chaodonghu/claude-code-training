@@ -49,10 +49,17 @@ export const EXPORT_COLUMN_OPTIONS: readonly {
   defaultSelected: key !== "last4",
 }))
 
-/** Filters an untrusted list down to known columns, in registry order. */
+const isExportColumn = (name: string): name is ExportColumn =>
+  (EXPORT_COLUMNS as readonly string[]).includes(name)
+
+/** Filters an untrusted list down to known columns, keeping the requested order. */
 export function parseExportColumns(raw: string | null): ExportColumn[] {
-  const requested = new Set((raw ?? "").split(",").map((name) => name.trim()))
-  return EXPORT_COLUMNS.filter((column) => requested.has(column))
+  const columns: ExportColumn[] = []
+  for (const name of (raw ?? "").split(",")) {
+    const key = name.trim()
+    if (isExportColumn(key) && !columns.includes(key)) columns.push(key)
+  }
+  return columns
 }
 
 export function parseExportScope(raw: string | null): ExportScope {

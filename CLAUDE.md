@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Claude Code Training — Repo Rescue
 
 Training repository for the Repo Rescue workshop. Learners take a ticket end to end against the Northwind Payments merchant console, then open a pull request here to be scored.
@@ -18,7 +22,7 @@ Read the narrowest one that applies before you write code.
 - `docs/tickets/` — the tickets engineers work, written as they arrive on a sprint board
 - `docs/specs/` — where plans go before code does, and the template they follow
 - `docs/ORG-STANDARDS.md` — the org-wide engineering standards every service is measured against
-- `.claude/` — the skills (`/spec`, `/pr`, `/ship-ready`) and the `bug-investigator` subagent. Open Claude Code at this root and they are available everywhere
+- `.claude/` — the skills (`/spec`, `/pr`, `/ship-ready`, `/submit`) and the `bug-investigator` subagent. They register only when Claude Code is opened at this root; opened from a parent directory or from `build-battle/merchant-console`, they are absent and their `SKILL.md` files have to be followed by hand. `.claude/launch.json` starts the dev server on port 3000
 - `build-battle/` — the exercise brief and the scoring rubric
 - `build-battle/merchant-console/` — Northwind Payments, the application itself
 - `.github/` — pull request template and the grading workflow
@@ -37,3 +41,11 @@ Work is submitted as a pull request against this repository and scored automatic
 - Branch from `main` with the ticket ID: `NWP-201-issue-cards`
 - Commit subjects carry the ticket ID: `NWP-201: issue virtual cards`
 - Fill in the pull request template. The grader reads it.
+- Nobody has push access to `JJFromTenex/claude-code-training`. Push to your own fork and open the PR from there; `/submit` does the fork, push, and PR in one step.
+- The grader (`.github/workflows/anthropic-tenex-reviewer.yml`) runs on every push to an open PR and skips drafts until they are marked ready.
+
+## Release Standards
+
+- All changes need test evidence before merging. State the command run and what it reported in the PR; "tests pass" on its own does not count.
+- No direct commits to `main`. Every change lands through a pull request from a branch.
+- Every PR includes a one-line business impact summary: who is affected and what changes for them.

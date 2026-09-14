@@ -60,3 +60,15 @@ export function canTransition(from: CardStatus, to: CardStatus): boolean {
 }
 
 export const CARD_CURRENCIES: readonly Currency[] = ["USD", "EUR", "GBP"]
+
+const REF_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
+const REF_LENGTH = 12
+
+/** Opaque handle for a card. Random, never derived from the number. */
+export function generateNumberRef(random: () => number = Math.random): string {
+  let ref = ""
+  while (ref.length < REF_LENGTH) {
+    ref += REF_ALPHABET[Math.floor(random() * REF_ALPHABET.length)]
+  }
+  return `cn_${ref}`
+}

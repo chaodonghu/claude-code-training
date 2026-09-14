@@ -1,5 +1,8 @@
+import { generateCardNumber, generateNumberRef } from "@/lib/cards"
 import { merchants } from "./merchants"
 import {
+  Card,
+  CardStatus,
   Currency,
   Dispute,
   Payment,
@@ -148,7 +151,60 @@ export function generate() {
   }
 
   const payouts = generatePayouts(payments)
-  return { payments, refunds, disputes, payouts }
+  const cards = generateCards()
+  return { payments, refunds, disputes, payouts, cards }
+}
+
+const CARD_NICKNAMES = [
+  "Ads spend",
+  "Vendor subscriptions",
+  "Contractor tools",
+  "Cloud hosting",
+  "Travel",
+  "Office supplies",
+] as const
+
+const CARD_SEED_STATUSES: readonly CardStatus[] = [
+  "active",
+  "active",
+  "frozen",
+  "active",
+  "cancelled",
+  "frozen",
+]
+
+/**
+ * Six cards so the list and the detail page have something on first load.
+ * Only the last four and an opaque ref are kept; the generated number is
+ * discarded here exactly as it is on the issue route.
+ */
+function generateCards(): Card[] {
+  const cards: Card[] = []
+
+  CARD_NICKNAMES.forEach((nickname, index) => {
+    const merchant = pick(merchants)
+    const limit = between(50_00, 2_000_00)
+    // One card sits past 80 percent so the amber spend bar has a case.
+    const spentPercent = index === 0 ? between(85, 95) : between(0, 70)
+    const createdAt = new Date(GENERATED_AT)
+    createdAt.setUTCDate(createdAt.getUTCDate() - between(1, 60))
+    createdAt.setUTCHours(between(0, 23), between(0, 59), between(0, 59), 0)
+
+    cards.push({
+      id: `card_${pad(index + 1)}`,
+      nickname,
+      merchantId: merchant.id,
+      limit,
+      spent: Math.floor((limit * spentPercent) / 100),
+      currency: merchant.currency,
+      status: CARD_SEED_STATUSES[index],
+      last4: generateCardNumber(rand).slice(-4),
+      numberRef: generateNumberRef(rand),
+      createdAt: createdAt.toISOString(),
+    })
+  })
+
+  return cards
 }
 
 function generatePayouts(payments: Payment[]): Payout[] {

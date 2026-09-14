@@ -7,6 +7,7 @@ import { formatInZone } from "@/lib/dates"
 import { formatMoney } from "@/lib/money"
 import { cx } from "@/lib/utils"
 import Link from "next/link"
+import { CardStatusActions } from "../card-status-actions"
 import { notFound } from "next/navigation"
 
 const AMBER_AT = 80
@@ -68,6 +69,7 @@ export default async function CardDetail({
           {card.nickname}
         </h1>
         <StatusBadge status={card.status} />
+        <CardStatusActions id={card.id} status={card.status} />
       </div>
       <p className="mt-1 font-mono text-sm text-gray-500">
         {maskCard(card.last4)}

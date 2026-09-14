@@ -1,7 +1,14 @@
 import { merchantById } from "./merchants"
 import { store } from "./store"
-import { Card, CardStatus, Currency, IssueCardInput } from "./types"
 import {
+  Card,
+  CardCategory,
+  CardStatus,
+  Currency,
+  IssueCardInput,
+} from "./types"
+import {
+  CARD_CATEGORIES,
   CARD_CURRENCIES,
   CARD_LIMIT_MAX,
   canTransition,
@@ -74,9 +81,26 @@ export function parseIssueCardInput(body: unknown): ParseResult {
     }
   }
 
+  const category = input.category
+  if (
+    typeof category !== "string" ||
+    !CARD_CATEGORIES.includes(category as CardCategory)
+  ) {
+    return {
+      ok: false,
+      message: `Category must be one of ${CARD_CATEGORIES.join(", ")}.`,
+    }
+  }
+
   return {
     ok: true,
-    value: { nickname, merchantId, limit, currency: currency as Currency },
+    value: {
+      nickname,
+      merchantId,
+      limit,
+      currency: currency as Currency,
+      category: category as CardCategory,
+    },
   }
 }
 
@@ -100,6 +124,7 @@ export function issueCard(
     limit: input.limit,
     spent: 0,
     currency: input.currency,
+    category: input.category,
     status: "active",
     last4: number.slice(-4),
     numberRef: generateNumberRef(random),

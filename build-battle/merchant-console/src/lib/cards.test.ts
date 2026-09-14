@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
+import { parseIssueCardInput } from "@/data/cards"
 import {
   CARD_BIN,
+  CARD_CATEGORIES,
+  CARD_CATEGORY_LABELS,
   CARD_LIMIT_MAX,
   CARD_TRANSITIONS,
   canTransition,
@@ -8,7 +11,7 @@ import {
   isValidLuhn,
   maskCard,
 } from "./cards"
-import { CardStatus } from "@/data/types"
+import { CardCategory, CardStatus } from "@/data/types"
 
 /**
  * Nothing in this repository may resemble a real PAN, so the BIN and the
@@ -107,5 +110,38 @@ describe("canTransition", () => {
 describe("CARD_LIMIT_MAX", () => {
   it("caps a card at 5,000,000 minor units", () => {
     expect(CARD_LIMIT_MAX).toBe(5_000_000)
+  })
+})
+
+describe("the category lock", () => {
+  const issue = (category: unknown) =>
+    parseIssueCardInput({
+      nickname: "Ads spend",
+      merchantId: "mch_01",
+      limit: 25000,
+      currency: "USD",
+      category,
+    })
+
+  it("accepts every category on the allowlist", () => {
+    for (const category of CARD_CATEGORIES) {
+      const result = issue(category)
+      expect(result.ok).toBe(true)
+      if (result.ok) expect(result.value.category).toBe(category)
+    }
+  })
+
+  it("rejects one that is not on the allowlist", () => {
+    for (const category of ["gambling", "", "OTHER", 3, null, undefined]) {
+      const result = issue(category)
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.message).toMatch(/Category must be one of/)
+    }
+  })
+
+  it("lists a label for every category", () => {
+    for (const category of CARD_CATEGORIES) {
+      expect(CARD_CATEGORY_LABELS[category as CardCategory]).toBeTruthy()
+    }
   })
 })

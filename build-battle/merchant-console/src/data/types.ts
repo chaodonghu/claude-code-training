@@ -85,6 +85,9 @@ export interface PaymentFilters {
 
 export type CardStatus = "active" | "frozen" | "cancelled"
 
+export type CardCategory =
+  "advertising" | "software" | "contractors" | "travel" | "office" | "other"
+
 export interface Card {
   id: string
   nickname: string
@@ -94,6 +97,7 @@ export interface Card {
   /** Integer minor units. Never a float. */
   spent: number
   currency: Currency
+  category: CardCategory
   status: CardStatus
   last4: string
   /** Opaque reference to the generated number. Never derived from it. */
@@ -107,4 +111,5 @@ export interface IssueCardInput {
   merchantId: string
   limit: number
   currency: Currency
+  category: CardCategory
 }

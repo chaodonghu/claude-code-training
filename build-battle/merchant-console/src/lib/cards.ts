@@ -1,4 +1,4 @@
-import { CardStatus, Currency } from "@/data/types"
+import { CardCategory, CardStatus, Currency } from "@/data/types"
 
 /**
  * Pure card logic. No store, no request: the seed and the tests both drive
@@ -63,6 +63,25 @@ export function canTransition(from: CardStatus, to: CardStatus): boolean {
 export const CARD_STATUSES = Object.keys(CARD_TRANSITIONS) as CardStatus[]
 
 export const CARD_CURRENCIES: readonly Currency[] = ["USD", "EUR", "GBP"]
+
+/** What the card is locked to. Chosen at issue time and shown on the card. */
+export const CARD_CATEGORIES: readonly CardCategory[] = [
+  "advertising",
+  "software",
+  "contractors",
+  "travel",
+  "office",
+  "other",
+]
+
+export const CARD_CATEGORY_LABELS: Record<CardCategory, string> = {
+  advertising: "Advertising",
+  software: "Software",
+  contractors: "Contractors",
+  travel: "Travel",
+  office: "Office",
+  other: "Other",
+}
 
 const REF_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
 const REF_LENGTH = 12

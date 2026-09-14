@@ -1,4 +1,8 @@
-import { generateCardNumber, generateNumberRef } from "@/lib/cards"
+import {
+  CARD_CATEGORIES,
+  generateCardNumber,
+  generateNumberRef,
+} from "@/lib/cards"
 import { merchants } from "./merchants"
 import {
   Card,
@@ -197,6 +201,7 @@ function generateCards(): Card[] {
       limit,
       spent: Math.floor((limit * spentPercent) / 100),
       currency: merchant.currency,
+      category: pick(CARD_CATEGORIES),
       status: CARD_SEED_STATUSES[index],
       last4: generateCardNumber(rand).slice(-4),
       numberRef: generateNumberRef(rand),

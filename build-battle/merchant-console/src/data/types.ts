@@ -88,6 +88,12 @@ export type CardStatus = "active" | "frozen" | "cancelled"
 export type CardCategory =
   "advertising" | "software" | "contractors" | "travel" | "office" | "other"
 
+export interface CardEvent {
+  status: CardStatus
+  /** ISO 8601, always UTC. */
+  at: string
+}
+
 export interface Card {
   id: string
   nickname: string
@@ -104,6 +110,8 @@ export interface Card {
   numberRef: string
   /** ISO 8601, always UTC. */
   createdAt: string
+  /** Every status the card has held, oldest first. */
+  history: CardEvent[]
 }
 
 export interface IssueCardInput {

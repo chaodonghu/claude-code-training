@@ -62,6 +62,16 @@ export function canTransition(from: CardStatus, to: CardStatus): boolean {
 /** The status allowlist, read off the transition table so there is one source. */
 export const CARD_STATUSES = Object.keys(CARD_TRANSITIONS) as CardStatus[]
 
+/**
+ * How a history entry reads. Only the first entry is the issue; after that
+ * the transition table means `active` can only have arrived by unfreezing.
+ */
+export const CARD_HISTORY_LABELS: Record<CardStatus, string> = {
+  active: "Unfrozen",
+  frozen: "Frozen",
+  cancelled: "Cancelled",
+}
+
 export const CARD_CURRENCIES: readonly Currency[] = ["USD", "EUR", "GBP"]
 
 /** What the card is locked to. Chosen at issue time and shown on the card. */

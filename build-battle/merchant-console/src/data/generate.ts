@@ -6,6 +6,7 @@ import {
 import { merchants } from "./merchants"
 import {
   Card,
+  CardEvent,
   CardStatus,
   Currency,
   Dispute,
@@ -194,6 +195,16 @@ function generateCards(): Card[] {
     createdAt.setUTCDate(createdAt.getUTCDate() - between(1, 60))
     createdAt.setUTCHours(between(0, 23), between(0, 59), between(0, 59), 0)
 
+    const status = CARD_SEED_STATUSES[index]
+    const history: CardEvent[] = [
+      { status: "active", at: createdAt.toISOString() },
+    ]
+    if (status !== "active") {
+      const changedAt = new Date(createdAt)
+      changedAt.setUTCDate(changedAt.getUTCDate() + between(2, 9))
+      history.push({ status, at: changedAt.toISOString() })
+    }
+
     cards.push({
       id: `card_${pad(index + 1)}`,
       nickname,
@@ -202,10 +213,11 @@ function generateCards(): Card[] {
       spent: Math.floor((limit * spentPercent) / 100),
       currency: merchant.currency,
       category: pick(CARD_CATEGORIES),
-      status: CARD_SEED_STATUSES[index],
+      status,
       last4: generateCardNumber(rand).slice(-4),
       numberRef: generateNumberRef(rand),
       createdAt: createdAt.toISOString(),
+      history,
     })
   })
 

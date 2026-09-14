@@ -123,6 +123,7 @@ export function issueCard(
   random: () => number = Math.random,
 ): { card: Card; number: string } {
   const number = generateCardNumber(random)
+  const createdAt = new Date().toISOString()
 
   const card: Card = {
     id: `card_${pad(store.cards.length + 1)}`,
@@ -135,7 +136,8 @@ export function issueCard(
     status: "active",
     last4: number.slice(-4),
     numberRef: generateNumberRef(random),
-    createdAt: new Date().toISOString(),
+    createdAt,
+    history: [{ status: "active", at: createdAt }],
   }
 
   store.cards.push(card)
@@ -168,5 +170,6 @@ export function transitionCard(
   }
 
   card.status = to
+  card.history.push({ status: to, at: new Date().toISOString() })
   return { ok: true, card }
 }

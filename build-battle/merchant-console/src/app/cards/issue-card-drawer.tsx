@@ -28,7 +28,7 @@ import { useState } from "react"
 
 type MerchantOption = { id: string; name: string; currency: Currency }
 
-type Issued = { card: Card; number: string }
+type Issued = { card: Card; number?: string }
 
 /** Four-digit groups, the way the number is read off a screen. */
 function groupDigits(number: string): string {
@@ -51,6 +51,8 @@ export function IssueCardDrawer({
   const [pending, setPending] = useState(false)
   const [issued, setIssued] = useState<Issued | null>(null)
   const [copied, setCopied] = useState(false)
+  // Held across retries so a resubmit after a failure cannot issue twice.
+  const [issueKey, setIssueKey] = useState(() => crypto.randomUUID())
 
   // The number lives only here, so closing the drawer is what discards it.
   const reset = () => {
@@ -63,6 +65,7 @@ export function IssueCardDrawer({
     setPending(false)
     setIssued(null)
     setCopied(false)
+    setIssueKey(crypto.randomUUID())
   }
 
   const close = () => {
@@ -91,7 +94,10 @@ export function IssueCardDrawer({
     try {
       const response = await fetch("/api/cards", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          "idempotency-key": issueKey,
+        },
         body: JSON.stringify({
           nickname,
           merchantId,
@@ -114,7 +120,7 @@ export function IssueCardDrawer({
   }
 
   const copy = async () => {
-    if (!issued) return
+    if (!issued?.number) return
     await navigator.clipboard.writeText(issued.number)
     setCopied(true)
   }
@@ -138,15 +144,24 @@ export function IssueCardDrawer({
               <DrawerDescription>{issued.card.nickname}</DrawerDescription>
             </DrawerHeader>
             <DrawerBody className="space-y-4">
-              <p className="font-mono text-lg tracking-wider text-gray-900 dark:text-gray-50">
-                {groupDigits(issued.number)}
-              </p>
-              <Button variant="secondary" className="py-1.5" onClick={copy}>
-                {copied ? "Copied" : "Copy"}
-              </Button>
-              <p className="text-sm text-gray-500">
-                This is the only time the full number is shown.
-              </p>
+              {issued.number ? (
+                <>
+                  <p className="font-mono text-lg tracking-wider text-gray-900 dark:text-gray-50">
+                    {groupDigits(issued.number)}
+                  </p>
+                  <Button variant="secondary" className="py-1.5" onClick={copy}>
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+                  <p className="text-sm text-gray-500">
+                    This is the only time the full number is shown.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  This card was already issued by an earlier attempt, so the
+                  number is not shown again. Open the card to see its last four.
+                </p>
+              )}
             </DrawerBody>
             <DrawerFooter>
               <Button onClick={close}>Done</Button>

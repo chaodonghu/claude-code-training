@@ -95,14 +95,16 @@ Model the card as a typed record with a status state machine encoded as a transi
 ## Out of scope
 
 - Persistence (NWP-203), auth, real issuer calls, editing a limit after issue (NWP-202).
-- Recording spend from payments. `spent` is a stored field; no card transactions exist in the store.
 
 ## Departures from the plan
 
 - A merchant category lock was added at issue time: `CardCategory` on the model, allowlisted in `parseIssueCardInput`, chosen in the drawer, shown on the list and detail. It was a stretch goal and came in early because it changes the model.
 - `CARD_STATUSES` is derived from the transition table and used by the status route, so there is one source for the allowlist.
 
+- After the first review, five items the ticket never listed were added: the server rejects a card currency that differs from the merchant's (the drawer's currency field is read-only, set by the merchant); issue is idempotent on an `Idempotency-Key` header with a replay returning the existing card and no number; cancel asks for confirmation inline; every card carries a `history` of status events shown on the detail page; and `spent` left the `Card` type, spend is now `spentOnCard` in `src/data/queries.ts` summing captured payments tagged with `cardId`, with the seed tagging real merchant-matched payments instead of inventing a number.
+- `sortPayments` compared amounts as strings. Fixed in passing with a test in `src/data/queries.test.ts`.
+
 ## Open questions
 
-- Currency defaults to the issuing merchant's currency and can be changed to any of the three. A mismatch is allowed, not rejected, since the ticket only names the allowlist. Reverse this if ops should never issue a card in a foreign currency.
+- Resolved: currency must match the merchant, enforced on the server.
 - Nickname is required, trimmed, and capped at 40 characters. The ticket sets no length; 40 fits the table.

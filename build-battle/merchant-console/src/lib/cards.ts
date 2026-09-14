@@ -59,6 +59,9 @@ export function canTransition(from: CardStatus, to: CardStatus): boolean {
   return CARD_TRANSITIONS[from].includes(to)
 }
 
+/** The status allowlist, read off the transition table so there is one source. */
+export const CARD_STATUSES = Object.keys(CARD_TRANSITIONS) as CardStatus[]
+
 export const CARD_CURRENCIES: readonly Currency[] = ["USD", "EUR", "GBP"]
 
 const REF_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"

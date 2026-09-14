@@ -1,13 +1,12 @@
 import { merchantById } from "@/data/merchants"
-import { Payment } from "@/data/types"
+import { Payment, PaymentFilters } from "@/data/types"
 import { formatMoney } from "./money"
 
 /**
  * CSV export for the payments table.
  *
- * The column set is fixed. Ops has asked for control over it — that is
- * NWP-101 — but today everyone gets every column, including the card
- * last four, whether or not the file is going to a merchant.
+ * Ops picks the columns and the scope, so everything the client sends is
+ * checked against the registry below before it reaches a cell or a filename.
  */
 
 export const EXPORT_COLUMNS = [
@@ -24,6 +23,49 @@ export const EXPORT_COLUMNS = [
 ] as const
 
 export type ExportColumn = (typeof EXPORT_COLUMNS)[number]
+
+export type ExportScope = "filtered" | "all"
+
+const COLUMN_LABELS: Record<ExportColumn, string> = {
+  id: "Payment ID",
+  created_at: "Created at",
+  merchant: "Merchant",
+  description: "Description",
+  status: "Status",
+  method: "Method",
+  card_brand: "Card brand",
+  last4: "Card last four",
+  amount: "Amount",
+  currency: "Currency",
+}
+
+export const EXPORT_COLUMN_OPTIONS: readonly {
+  key: ExportColumn
+  label: string
+  defaultSelected: boolean
+}[] = EXPORT_COLUMNS.map((key) => ({
+  key,
+  label: COLUMN_LABELS[key],
+  defaultSelected: key !== "last4",
+}))
+
+/** Filters an untrusted list down to known columns, in registry order. */
+export function parseExportColumns(raw: string | null): ExportColumn[] {
+  const requested = new Set((raw ?? "").split(",").map((name) => name.trim()))
+  return EXPORT_COLUMNS.filter((column) => requested.has(column))
+}
+
+export function parseExportScope(raw: string | null): ExportScope {
+  return raw === "all" ? "all" : "filtered"
+}
+
+export function exportScopeLabel(
+  scope: ExportScope,
+  status: PaymentFilters["status"],
+): string {
+  if (scope === "all") return "all"
+  return status && status !== "all" ? status : "filtered"
+}
 
 function escapeCell(value: string): string {
   if (/[",\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`
@@ -66,6 +108,6 @@ export function toCsv(
   return [header, ...rows].join("\n")
 }
 
-export function exportFilename(date = new Date()): string {
-  return `payments-${date.toISOString().slice(0, 10)}.csv`
+export function exportFilename(label: string, date = new Date()): string {
+  return `payments-${label}-${date.toISOString().slice(0, 10)}.csv`
 }

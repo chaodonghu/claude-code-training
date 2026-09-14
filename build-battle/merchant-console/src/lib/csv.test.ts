@@ -1,12 +1,19 @@
 import { describe, expect, it } from "vitest"
 import { Payment } from "@/data/types"
-import { EXPORT_COLUMNS, exportFilename, toCsv } from "./csv"
+import {
+  EXPORT_COLUMN_OPTIONS,
+  EXPORT_COLUMNS,
+  exportFilename,
+  exportScopeLabel,
+  parseExportColumns,
+  toCsv,
+} from "./csv"
 
 /**
  * The export is the file ops hands to a merchant, so a broken cell is a
  * support ticket rather than a stack trace. These tests pin the escaping and
- * the column contract; NWP-101 changes which columns ship, not how a cell is
- * written, and these should still pass afterwards.
+ * the column contract, plus the parsers that decide which columns and which
+ * rows a download gets.
  */
 
 const payment: Payment = {
@@ -76,10 +83,64 @@ describe("toCsv", () => {
   })
 })
 
+describe("EXPORT_COLUMN_OPTIONS", () => {
+  it("lists every export column, in order", () => {
+    expect(EXPORT_COLUMN_OPTIONS.map((option) => option.key)).toEqual([
+      ...EXPORT_COLUMNS,
+    ])
+  })
+
+  it("leaves the card last four off by default, and nothing else", () => {
+    expect(
+      EXPORT_COLUMN_OPTIONS.filter((option) => !option.defaultSelected).map(
+        (option) => option.key,
+      ),
+    ).toEqual(["last4"])
+  })
+})
+
+describe("parseExportColumns", () => {
+  it("drops names that are not export columns", () => {
+    expect(parseExportColumns("id,merchant_id,amount")).toEqual(["id", "amount"])
+  })
+
+  it("keeps a repeated column once", () => {
+    expect(parseExportColumns("id,id,amount")).toEqual(["id", "amount"])
+  })
+
+  it("returns registry order whatever order the client sent", () => {
+    expect(parseExportColumns("currency, amount ,id")).toEqual([
+      "id",
+      "amount",
+      "currency",
+    ])
+  })
+
+  it("returns nothing for a missing or empty parameter", () => {
+    expect(parseExportColumns(null)).toEqual([])
+    expect(parseExportColumns("")).toEqual([])
+  })
+})
+
+describe("exportScopeLabel", () => {
+  it("says all when the scope ignores the filter", () => {
+    expect(exportScopeLabel("all", "disputed")).toBe("all")
+  })
+
+  it("names the status the file was filtered to", () => {
+    expect(exportScopeLabel("filtered", "disputed")).toBe("disputed")
+  })
+
+  it("falls back to filtered when no status narrows the set", () => {
+    expect(exportScopeLabel("filtered", "all")).toBe("filtered")
+    expect(exportScopeLabel("filtered", undefined)).toBe("filtered")
+  })
+})
+
 describe("exportFilename", () => {
-  it("stamps the UTC date, so two exports on the same day collide by design", () => {
-    expect(exportFilename(new Date("2026-03-14T23:00:00.000Z"))).toBe(
-      "payments-2026-03-14.csv",
-    )
+  it("stamps the scope and the UTC date, so two exports on the same day collide by design", () => {
+    expect(
+      exportFilename("disputed", new Date("2026-03-14T23:00:00.000Z")),
+    ).toBe("payments-disputed-2026-03-14.csv")
   })
 })

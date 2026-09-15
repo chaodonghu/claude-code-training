@@ -31,8 +31,34 @@ type MerchantOption = { id: string; name: string; currency: Currency }
 type Issued = { card: Card; number?: string }
 
 /** Four-digit groups, the way the number is read off a screen. */
-function groupDigits(number: string): string {
-  return number.replace(/(.{4})/g, "$1 ").trim()
+const groupDigits = (number: string) => number.replace(/(.{4})/g, "$1 ").trim()
+
+const LABEL = "text-sm font-medium text-gray-900 dark:text-gray-50"
+
+function Field({
+  id,
+  label,
+  help,
+  children,
+}: {
+  id: string
+  label: string
+  help?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className={LABEL}>
+        {label}
+      </label>
+      {children}
+      {help && (
+        <p id={`${id}-help`} className="mt-1 text-xs text-gray-500">
+          {help}
+        </p>
+      )}
+    </div>
+  )
 }
 
 export function IssueCardDrawer({
@@ -182,13 +208,7 @@ export function IssueCardDrawer({
               </DrawerDescription>
             </DrawerHeader>
             <DrawerBody className="space-y-4">
-              <div>
-                <label
-                  htmlFor="card-nickname"
-                  className="text-sm font-medium text-gray-900 dark:text-gray-50"
-                >
-                  Nickname
-                </label>
+              <Field id="card-nickname" label="Nickname">
                 <Input
                   id="card-nickname"
                   name="nickname"
@@ -199,15 +219,9 @@ export function IssueCardDrawer({
                   required
                   className="mt-2"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label
-                  htmlFor="card-merchant"
-                  className="text-sm font-medium text-gray-900 dark:text-gray-50"
-                >
-                  Merchant
-                </label>
+              <Field id="card-merchant" label="Merchant">
                 <Select value={merchantId} onValueChange={onMerchantChange}>
                   <SelectTrigger id="card-merchant" className="mt-2">
                     <SelectValue placeholder="Choose a merchant" />
@@ -220,15 +234,9 @@ export function IssueCardDrawer({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
 
-              <div>
-                <label
-                  htmlFor="card-limit"
-                  className="text-sm font-medium text-gray-900 dark:text-gray-50"
-                >
-                  Spend limit
-                </label>
+              <Field id="card-limit" label="Spend limit">
                 <Input
                   id="card-limit"
                   name="limit"
@@ -240,15 +248,13 @@ export function IssueCardDrawer({
                   required
                   className="mt-2"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label
-                  htmlFor="card-currency"
-                  className="text-sm font-medium text-gray-900 dark:text-gray-50"
-                >
-                  Currency
-                </label>
+              <Field
+                id="card-currency"
+                label="Currency"
+                help="Set by the merchant."
+              >
                 <Input
                   id="card-currency"
                   name="currency"
@@ -257,21 +263,9 @@ export function IssueCardDrawer({
                   aria-describedby="card-currency-help"
                   className="mt-2"
                 />
-                <p
-                  id="card-currency-help"
-                  className="mt-1 text-xs text-gray-500"
-                >
-                  Set by the merchant.
-                </p>
-              </div>
+              </Field>
 
-              <div>
-                <label
-                  htmlFor="card-category"
-                  className="text-sm font-medium text-gray-900 dark:text-gray-50"
-                >
-                  Category
-                </label>
+              <Field id="card-category" label="Category">
                 <Select
                   value={category}
                   onValueChange={(next) => setCategory(next as CardCategory)}
@@ -288,7 +282,7 @@ export function IssueCardDrawer({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </Field>
 
               {error && (
                 <p

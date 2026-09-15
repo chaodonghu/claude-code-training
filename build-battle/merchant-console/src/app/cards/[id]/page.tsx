@@ -23,8 +23,7 @@ export default async function CardDetail({
   const card = cardById(id)
   if (!card) notFound()
 
-  // A card outlives its merchant record in the seed only if someone removes
-  // one, so fall back to the id rather than crashing the page.
+  // Fall back to the id rather than crash if a merchant record is gone.
   const merchant = merchantById(card.merchantId)
   const merchantName = merchant?.name ?? card.merchantId
   const timezone = merchant?.timezone ?? "UTC"
